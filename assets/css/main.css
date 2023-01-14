@@ -4322,18 +4322,24 @@ input[type=number] {
 }
 
 #donation-amount {
+	float: left;
 	width: 5em;
 	height: 3em;
 }
 
 .dollar-sign {
 	margin-right: 0.1em;
-	height: 0.9em;
-	font-size: 1.6em;
+	height: 0.8em;
+	font-size: 1.7em;
 	float: left;
 }
 
-#donation-button {
+.dollar-type {
+	height: 0.8em;
+	font-size: 1.7em;
+}
+
+#donate-button {
 	padding: 0;
 	width: 10em;
 }
