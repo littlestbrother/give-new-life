@@ -1,0 +1,1 @@
+aws s3 sync --acl=public-read ./public s3://www.givemenewlife.org --profile aaron
