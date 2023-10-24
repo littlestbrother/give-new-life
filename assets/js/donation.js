@@ -94,7 +94,7 @@ const heartMinistriesURL = (donationAmount) => {
 			break;
 	}
 
-	return `https://heartministriesinc-bloom.kindful.com/campaigns/1199458?utf8=%E2%9C%93&campaigns=1199458&amount=${donationAmount}&recurring=landing_recurring&frequency=${frequency}`;
+	return `https://heartministriesinc-bloom.kindful.com/campaigns/1201021?utf8=%E2%9C%93&campaigns=1199458&amount=${donationAmount}&recurring=landing_recurring&frequency=${frequency}`;
 }
 
 // redirect user on button click using donation form options
@@ -103,7 +103,7 @@ $("#donate-button").click(() => {
 	// get amount of money (USD) user wants to donate
 	const amountDonation = $("#donation-amount").val();
 
-	const redirectURL = donationFrequency ? heartMinistriesURL(amountDonation) : `https://heartministriesinc-bloom.kindful.com/campaigns/1199458?utf8=%E2%9C%93&campaigns=1199458&amount=${amountDonation}&recurring=landing_recurring&frequency=`;
+	const redirectURL = donationFrequency ? heartMinistriesURL(amountDonation) : `https://heartministriesinc-bloom.kindful.com/campaigns/1201021?utf8=%E2%9C%93&campaigns=1199458&amount=${amountDonation}&recurring=landing_recurring&frequency=`;
 	window.location.href = redirectURL;
 });
 
