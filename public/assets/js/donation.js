@@ -1,109 +1,61 @@
-let oneTimeDonation = true;
-let donationFrequency = null;
+// Donation box: sends the donor to the Heart Ministries (Kindful) checkout.
+// The form's current state is read at click time, so what the donor sees is
+// always what gets sent, even after the browser restores the form on Back/reload.
 
-const disableDonateButton = () => { $("#donate-button").attr('disabled', 'disabled') };
-const disableDonationFrequencyDropDown = () => { $("#donation-frequency").attr('disabled', 'disabled') };
+const DONATION_BASE_URL = 'https://heartministriesinc-bloom.kindful.com/campaigns/1201021';
+const DONATION_CAMPAIGN = '1199458';
 
-const enableDonateButton = () => { $("#donate-button").removeAttr('disabled') };
-const enableDonationFrequencyDropDown = () => { $("#donation-frequency").removeAttr('disabled') };
+// Form option value => Kindful frequency code
+const FREQUENCY_CODES = {
+	RWOM: '5',   // Recurring weekly on Monday
+	REOW: '8',   // Recurring every other week
+	RMOT1: '1',  // Recurring monthly on the 1st
+	RMOT5: '2',  // Recurring monthly on the 5th
+	RMOT10: '3', // Recurring monthly on the 10th
+	RMOT20: '4', // Recurring monthly on the 20th
+	RQ: '9',     // Recurring quarterly
+	RY: '7',     // Recurring yearly
+};
 
-// disabled drop down if one time donation is enabled
-$("#donation-one-time").click(() => {
-	oneTimeDonation = true;
-	disableDonationFrequencyDropDown();
-	enableDonateButton();
-});
+const isRecurring = () => $('#donation-reoccurring').is(':checked');
+const selectedFrequency = () => (isRecurring() ? FREQUENCY_CODES[$('#donation-frequency').val()] : '') || '';
 
-// enable drop down if reoccurring donation is enabled
-$("#donation-reoccurring").click(() => {
-	oneTimeDonation = false;
-	enableDonationFrequencyDropDown();
+const donationAmount = () => {
+	const amount = Number($('#donation-amount').val());
+	return Number.isFinite(amount) && amount > 0 ? amount : null;
+};
 
-	// disabled donate button if no valid option is selected
-	if ($("#donation-frequency").val().length <= 0) {
-		donationFrequency = null;
-		// disable button
-		disableDonateButton();
-	}
-});
+const canDonate = () => donationAmount() !== null && (!isRecurring() || selectedFrequency() !== '');
 
-// update variable "donationFrequency" on option change
-$("#donation-frequency").on('change', () => {
-	// check that a valid option was pressed
-	const selectedFrequency = $("#donation-frequency").val();
-	if (selectedFrequency.length <= 0) {
-		donationFrequency = null;
-		// disable donate button if not valid
-		disableDonateButton();
-	} else {
-		donationFrequency = selectedFrequency;
-		enableDonateButton();
-	}
-	console.log(donationFrequency);
-});
+// Sync the dropdown and button with the radio buttons and inputs
+const updateDonationForm = () => {
+	$('#donation-frequency').prop('disabled', !isRecurring());
+	$('#donate-button').prop('disabled', !canDonate());
+};
 
-const heartMinistriesURL = (donationAmount) => {
-	// HTML values => Human values => Heart Ministries API values
-	// null => One Time => null
-	// RWOM => Recurring weekly on Monday => 5
-	// REOW => Recurring every other week => 8 
-	// RMOT1 => Recurring monthly on the 1st => 1
-	// RMOT5 => Recurring monthly on the 5th => 2
-	// RMOT10 => Recurring monthly on the 10th => 3
-	// RMOT20 => Recurring monthly on the 20th => 4
-	// RQ => Recurring quarterly => 9 
-	// RY => Recurring yearly => 7
+const donationURL = () => {
+	const params = new URLSearchParams({
+		utf8: '✓',
+		campaigns: DONATION_CAMPAIGN,
+		amount: String(donationAmount()),
+		recurring: 'landing_recurring',
+		frequency: selectedFrequency(),
+	});
+	return `${DONATION_BASE_URL}?${params}`;
+};
 
-	let frequency;
+const donate = (event) => {
+	if (event) event.preventDefault();
+	if (!canDonate()) return;
+	window.location.href = donationURL();
+};
 
-	switch (donationFrequency) {
-		case 'RWOM':
-			frequency = '5'
-			break;
+$('#donation-one-time, #donation-reoccurring, #donation-frequency').on('change', updateDonationForm);
+$('#donation-amount').on('input change', updateDonationForm);
+$('#donate-button').on('click', donate);
+// Pressing Enter in the amount box submits the form; donate instead of reloading the page
+$('#donation-amount').closest('form').on('submit', donate);
 
-		case 'REOW':
-			frequency = '8'
-			break;
-
-		case 'RMOT1':
-			frequency = '1'
-			break;
-
-		case 'RMOT5':
-			frequency = '2'
-			break;
-
-		case 'RMOT10':
-			frequency = '3'
-			break;
-
-		case 'RMOT20':
-			frequency = '4'
-			break;
-
-		case 'RQ':
-			frequency = '9'
-			break;
-
-		case 'RY':
-			frequency = '7'
-			break;
-
-		default:
-			frequency = ''
-			break;
-	}
-
-	return `https://heartministriesinc-bloom.kindful.com/campaigns/1201021?utf8=%E2%9C%93&campaigns=1199458&amount=${donationAmount}&recurring=landing_recurring&frequency=${frequency}`;
-}
-
-// redirect user on button click using donation form options
-$("#donate-button").click(() => {
-
-	// get amount of money (USD) user wants to donate
-	const amountDonation = $("#donation-amount").val();
-
-	const redirectURL = donationFrequency ? heartMinistriesURL(amountDonation) : `https://heartministriesinc-bloom.kindful.com/campaigns/1201021?utf8=%E2%9C%93&campaigns=1199458&amount=${amountDonation}&recurring=landing_recurring&frequency=`;
-	window.location.href = redirectURL;
-});
-
+// Browsers can restore form values on Back or reload, after this script first runs
+$(window).on('pageshow', updateDonationForm);
+updateDonationForm();
