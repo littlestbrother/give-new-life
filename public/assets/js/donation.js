@@ -10,6 +10,7 @@ const enableDonationFrequencyDropDown = () => { $("#donation-frequency").removeA
 // disabled drop down if one time donation is enabled
 $("#donation-one-time").click(() => {
 	oneTimeDonation = true;
+	donationFrequency = null;
 	disableDonationFrequencyDropDown();
 	enableDonateButton();
 });
